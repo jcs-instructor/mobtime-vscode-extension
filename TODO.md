@@ -14,8 +14,9 @@ Co-authored-by: Joel Silberman <42779942+jcs-instructor@users.noreply.github.com
 - [x] Create a separate helloworld vscode plugin (to learn) on a branch (see https://code.visualstudio.com/api/get-started/your-first-extension)
 - [x] Fork mrozzbarry repo - https://github.com/jcs-instructor/mobtime-vscode-extension
 - [x] Get forked code working as is with the current mobti.me url (from our copy in our codebase)
-- [ ] Modify url
 - [ ] See must-haves, etc. at bottom of this file
+- [ ] Required if and when merging to mrozzbarry
+  - [ ] replace all localhost:3000 with mobti.me and figure out how to configure URL
 
 ### Option 2: Create from scratch
 
