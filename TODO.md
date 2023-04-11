@@ -1,5 +1,10 @@
 # VS Code Extension
 
+## Co-authors
+
+Co-authored-by: Ethan Strominger <ethanstrominger2@gmail.com>
+Co-authored-by: Joel Silberman <42779942+jcs-instructor@users.noreply.github.com>
+
 ## Implementation
 
 ### Option 1: Use mrozzbarry with minimal edits
