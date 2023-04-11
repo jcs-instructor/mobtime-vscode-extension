@@ -28,6 +28,7 @@ Co-authored-by: Joel Silberman <42779942+jcs-instructor@users.noreply.github.com
 - [ ] Must haves for Joel/Ethan
   - [x] Configure URL
   - [ ] Join, and see all default fields
+    - [ ] NEXT: Modify our server to send back information in their format when joining from their extension
     - [ ] Time remaining in sidebar and bottom
     - [ ] Duration
     - [ ] Participants
