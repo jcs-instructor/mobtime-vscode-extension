@@ -47,8 +47,8 @@ export const Connector: React.FC = () => {
       />
       <p style={{ marginTop: '4px' }}>
         <strong>Server: </strong>
-        <a href={`${timerServer || 'https://localhost:3000'}/${timerName || ''}`}>
-          {timerServer || 'https://localhost:3000'}/{timerName}
+        <a href={`${timerServer || 'https://localhost:4000'}/${timerName || ''}`}>
+          {timerServer || 'https://localhost:4000'}/{timerName}
         </a>
       </p>
       <AnimatePresence>

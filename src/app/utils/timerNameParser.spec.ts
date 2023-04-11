@@ -8,7 +8,7 @@ describe('timerNameParser', () => {
     ['te-st.te_st', {name: 'te-st.te_st', server: undefined} ],
     ['https://mobtime.vehikl.com/test', {name: 'test', server: 'https://mobtime.vehikl.com'} ],
     ['https://mobtime.vehikl.com/////134324', {name: '134324', server: 'https://mobtime.vehikl.com'} ],
-    ['https://localhost:3000/test-test', {name: 'test-test', server: 'https://localhost:3000'} ],
+    ['https://localhost:4000/test-test', {name: 'test-test', server: 'https://localhost:4000'} ],
     ['https://www.npmjs.com/package', {name: 'package', server: 'https://www.npmjs.com' }]
   ])('shoud parse timer name from %s to %s', (value, expected) => {
     expect(parseMobTimeName(value)).toStrictEqual(expected);

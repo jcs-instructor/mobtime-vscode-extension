@@ -220,7 +220,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         nodeWebsocket(
           projectSettings.timerName,
           {
-            domain: projectSettings.server || "localhost:3000",
+            domain: projectSettings.server || "localhost:4000",
             secure: true
           }
         ));
@@ -296,7 +296,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
               ...this.store?.projects,
               [this.workspacePath]: {
                   timerName: this.workspaceName,
-                  server: 'localhost:3000',
+                  server: 'localhost:4000',
                   activeTabIndex: 0,
                 ...this.store?.projects?.[this.workspacePath],
                 ...projectSettings,

@@ -16,7 +16,7 @@ Co-authored-by: Joel Silberman <42779942+jcs-instructor@users.noreply.github.com
 - [x] Get forked code working as is with the current mobti.me url (from our copy in our codebase)
 - [ ] See must-haves, etc. at bottom of this file
 - [ ] Required if and when merging to mrozzbarry
-  - [ ] replace all localhost:3000 with mobti.me and figure out how to configure URL
+  - [ ] replace all localhost:4000 with mobti.me and figure out how to configure URL
 
 ### Option 2: Create from scratch
 
@@ -26,7 +26,7 @@ Co-authored-by: Joel Silberman <42779942+jcs-instructor@users.noreply.github.com
 ## Must Haves
 
 - [ ] Must haves for Joel/Ethan
-  - [ ] Configure URL
+  - [x] Configure URL
   - [ ] Join, and see all default fields
     - [ ] Time remaining in sidebar and bottom
     - [ ] Duration
