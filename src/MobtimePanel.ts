@@ -1,9 +1,22 @@
 import * as vscode from "vscode";
-import { ExtensionStore, MobtimeState, ProjectSettings } from "./app/shared/interfaces";
-import { ExtensionAction, ExtensionActions, ViewAction, ViewActions } from "./app/shared/actions";
-import {Mobtime, nodeWebsocket, Message} from '@mobtime/sdk';
-import { millisToMinutes } from './app/shared/timeConverter';
-import { OPEN_SIDEBAR_COMMAND, START_TIMER_COMMAND, TOGGLE_TIMER_COMMAND } from "./constants";
+import {
+  ExtensionStore,
+  MobtimeState,
+  ProjectSettings,
+} from "./app/shared/interfaces";
+import {
+  ExtensionAction,
+  ExtensionActions,
+  ViewAction,
+  ViewActions,
+} from "./app/shared/actions";
+import { Mobtime, nodeWebsocket, Message } from "@mobtime/sdk";
+import { millisToMinutes } from "./app/shared/timeConverter";
+import {
+  OPEN_SIDEBAR_COMMAND,
+  START_TIMER_COMMAND,
+  TOGGLE_TIMER_COMMAND,
+} from "./constants";
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
@@ -12,53 +25,62 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
   private store?: ExtensionStore;
   private updateStore: (store?: ExtensionStore) => void;
 
-  private workspacePath = vscode.workspace.workspaceFolders?.[0]?.uri.path || 'no-workspace';
-  private workspaceName = vscode.workspace.workspaceFolders?.[0]?.name || 'no-workspace';
-  private getProjectSettings = (): ProjectSettings | undefined => this.store?.projects?.[this.workspacePath];
+  private workspacePath =
+    vscode.workspace.workspaceFolders?.[0]?.uri.path || "no-workspace";
+  private workspaceName =
+    vscode.workspace.workspaceFolders?.[0]?.name || "no-workspace";
+  private getProjectSettings = (): ProjectSettings | undefined =>
+    this.store?.projects?.[this.workspacePath];
 
   private statusBarCounter: NodeJS.Timeout | null = null;
-  private statusBarTimerItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0);
-  private statusBarPauseAndPlayItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 0);
+  private statusBarTimerItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left,
+    0
+  );
+  private statusBarPauseAndPlayItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left,
+    0
+  );
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
     _updateStore: (store?: ExtensionStore) => void,
-    _store?: ExtensionStore,
-    ) {
-      vscode.commands.registerCommand(START_TIMER_COMMAND, () => {
-        this._onViewAction({
-          type: ExtensionAction.START,
-        });
+    _store?: ExtensionStore
+  ) {
+    vscode.commands.registerCommand(START_TIMER_COMMAND, () => {
+      this._onViewAction({
+        type: ExtensionAction.START,
       });
+    });
 
-      vscode.commands.registerCommand(TOGGLE_TIMER_COMMAND, () => {
-        if (this.state?.timer?.startedAt) {
-          this._onViewAction({
-            type: ExtensionAction.PAUSE,
-          });
-          return;
-        }
+    vscode.commands.registerCommand(TOGGLE_TIMER_COMMAND, () => {
+      if (this.state?.timer?.startedAt) {
         this._onViewAction({
-          type: ExtensionAction.START,
+          type: ExtensionAction.PAUSE,
         });
-      });
-
-      this.store = _store;
-
-      this.updateStore = (newStore?: ExtensionStore) => {
-        this.store = newStore;
-        _updateStore(newStore);
-      };
-  
-      if (this.getProjectSettings()?.timerName) {
-        this._connectToMobtime();
+        return;
       }
+      this._onViewAction({
+        type: ExtensionAction.START,
+      });
+    });
+
+    this.store = _store;
+
+    this.updateStore = (newStore?: ExtensionStore) => {
+      this.store = newStore;
+      _updateStore(newStore);
+    };
+
+    if (this.getProjectSettings()?.timerName) {
+      this._connectToMobtime();
+    }
   }
 
   // Calls when sidebar opens
   public async resolveWebviewView(panel: vscode.WebviewView) {
     this.view = panel;
-    
+
     panel.webview.options = {
       enableScripts: true,
       localResourceRoots: [this._extensionUri],
@@ -68,13 +90,14 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
     panel.onDidChangeVisibility(async (e) => {
       if (panel.visible) {
-        (this.view || panel).webview.html = this._getHtmlForWebview(panel.webview);
+        (this.view || panel).webview.html = this._getHtmlForWebview(
+          panel.webview
+        );
       }
     });
 
     panel.webview.onDidReceiveMessage(this._onViewAction);
   }
-
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const styleResetUri = webview.asWebviewUri(
@@ -84,7 +107,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     const styleVSCodeUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "media", "vscode.css")
     );
-    
+
     const scriptUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._extensionUri, "out", "main.js")
     );
@@ -109,6 +132,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
   private _listenMobtimeEvents(mobtime: Mobtime) {
     this.mobtimer = mobtime;
+    console.log("listening mobtime events");
 
     this._dispatchViewAction({
       type: ViewAction.TIMER_SYNC,
@@ -118,29 +142,38 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     this.updateStatusBarTimer();
     this.state = mobtime.state;
 
-    mobtime.on(Message.MOB_UPDATE, (() => {
-      this._dispatchViewAction({
-        type: ViewAction.TIMER_SYNC,
-        data: mobtime.state,
-      });
-      this.state = mobtime.state;
-      this.updateStatusBarTimer();
-      if (!this.view?.visible) {
-        const message = `Mob Order, ${(this.state?.settings?.mobOrder.split(',') || [])
-        .map((order, index) => `${order}: ${this.state?.mob?.[index]?.name || '-'}`)
-        .join(', ')}`;
-        this.showNotification(message);
-      }
-    }).bind(this));
+    mobtime.on(
+      Message.MOB_UPDATE,
+      (() => {
+        console.log("mobtime.state", JSON.stringify(mobtime.state));
+        this._dispatchViewAction({
+          type: ViewAction.TIMER_SYNC,
+          data: mobtime.state,
+        });
+        this.state = mobtime.state;
+        this.updateStatusBarTimer();
+        if (!this.view?.visible) {
+          const message = `Mob Order, ${(
+            this.state?.settings?.mobOrder.split(",") || []
+          )
+            .map(
+              (order, index) =>
+                `${order}: ${this.state?.mob?.[index]?.name || "-"}`
+            )
+            .join(", ")}`;
+          this.showNotification(message);
+        }
+      }).bind(this)
+    );
 
-     mobtime.on(Message.GOALS_UPDATE, () => {
+    mobtime.on(Message.GOALS_UPDATE, () => {
       this._dispatchViewAction({
         type: ViewAction.TIMER_SYNC,
         data: mobtime.state,
       });
       this.state = mobtime.state;
-      if (!this.view?.visible) { 
-        this.showNotificationWithOpenTimerAction('Mobtimer Goals updated');
+      if (!this.view?.visible) {
+        this.showNotificationWithOpenTimerAction("Mobtimer Goals updated");
       }
     });
 
@@ -152,8 +185,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
       this.state = mobtime.state;
       this.updateStatusBarTimer();
-      if (!this.view?.visible) { 
-        this.showNotificationWithOpenTimerAction('Mobtimer Settings updated');
+      if (!this.view?.visible) {
+        this.showNotificationWithOpenTimerAction("Mobtimer Settings updated");
       }
     });
 
@@ -166,7 +199,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       this.state = mobtime.state;
       this.updateStatusBarTimer();
     });
-  
+
     mobtime.on(Message.TIMER_PAUSE, () => {
       this._dispatchViewAction({
         type: ViewAction.TIMER_SYNC,
@@ -176,7 +209,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       this.state = mobtime.state;
       this.updateStatusBarTimer();
     });
-  
+
     mobtime.on(Message.TIMER_UPDATE, () => {
       this._dispatchViewAction({
         type: ViewAction.TIMER_SYNC,
@@ -195,12 +228,17 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
       this.state = mobtime.state;
       this.updateStatusBarTimer();
-      const START_TIMER_ACTION_LABEL = 'Start Next Turn';
-      vscode.window.showInformationMessage('⏱️⏱️ The Timer is up ⏱️⏱️', START_TIMER_ACTION_LABEL).then((e) => {
-        if (e === START_TIMER_ACTION_LABEL) {
-          vscode.commands.executeCommand(START_TIMER_COMMAND);
-        }
-      });
+      const START_TIMER_ACTION_LABEL = "Start Next Turn";
+      vscode.window
+        .showInformationMessage(
+          "⏱️⏱️ The Timer is up ⏱️⏱️",
+          START_TIMER_ACTION_LABEL
+        )
+        .then((e) => {
+          if (e === START_TIMER_ACTION_LABEL) {
+            vscode.commands.executeCommand(START_TIMER_COMMAND);
+          }
+        });
     });
   }
 
@@ -215,18 +253,15 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       return;
     }
 
-    const mobtimer = await new Mobtime()
-      .usingSocket(
-        nodeWebsocket(
-          projectSettings.timerName,
-          {
-            domain: projectSettings.server || "localhost:4000",
-            secure: true
-          }
-        ));
+    const mobtimer = await new Mobtime().usingSocket(
+      nodeWebsocket(projectSettings.timerName, {
+        domain: projectSettings.server || "mobti.me",
+        secure: true,
+      })
+    );
 
     this._listenMobtimeEvents(mobtimer);
-    
+
     this.statusBarTimerAction.updateLabels();
   };
 
@@ -236,10 +271,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     if (this.state) {
       this._dispatchViewAction({
         type: ViewAction.TIMER_SYNC,
-        data: this.state
+        data: this.state,
       });
     }
-    
+
     this._dispatchViewAction({
       type: ViewAction.INITIAL_STORE,
       data: {
@@ -267,7 +302,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           projects: {
             ...this.store?.projects,
             [this.workspacePath]: store,
-          }
+          },
         });
         await this._connectToMobtime(store);
         this._syncMobtimeSidebar();
@@ -286,7 +321,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       }
       case ExtensionAction.UPDATE_EXTENSION_STORE: {
         if (this.store) {
-          const { viewZoom, workspacePath: _, ...projectSettings } = action.data;
+          const {
+            viewZoom,
+            workspacePath: _,
+            ...projectSettings
+          } = action.data;
           this.updateStore({
             ...this.store,
             settings: {
@@ -295,15 +334,15 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             projects: {
               ...this.store?.projects,
               [this.workspacePath]: {
-                  timerName: this.workspaceName,
-                  server: 'localhost:4000',
-                  activeTabIndex: 0,
+                timerName: this.workspaceName,
+                server: "mobti.me",
+                activeTabIndex: 0,
                 ...this.store?.projects?.[this.workspacePath],
                 ...projectSettings,
               },
-            }
+            },
           });
-          this.updateStore({...this.store, ...action.data});
+          this.updateStore({ ...this.store, ...action.data });
         }
         break;
       }
@@ -335,7 +374,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         break;
       }
       case ExtensionAction.START: {
-        if(this.mobtimer.state.timer.duration > 0) {
+        if (this.mobtimer.state.timer.duration > 0) {
           this.mobtimer.timer().resume().commit();
           break;
         }
@@ -356,12 +395,14 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
   private statusBarTimerAction = {
     updateLabels: () => {
       const projectSettings = this.getProjectSettings();
-      this.statusBarTimerItem.text = `$(watch) Mobtimer${projectSettings?.timerName ? " : " + projectSettings?.timerName: ''}`;
+      this.statusBarTimerItem.text = `$(watch) Mobtimer${
+        projectSettings?.timerName ? " : " + projectSettings?.timerName : ""
+      }`;
       this.statusBarTimerAction.complete();
 
       this.statusBarTimerItem.command = OPEN_SIDEBAR_COMMAND;
       this.statusBarPauseAndPlayItem.command = TOGGLE_TIMER_COMMAND;
-      
+
       this.statusBarTimerItem.show();
       if (projectSettings?.timerName) {
         this.statusBarPauseAndPlayItem.show();
@@ -372,22 +413,28 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     },
     pause: (duration: number) => {
       this.statusBarTimerAction.clearTimer();
-      this.statusBarPauseAndPlayItem.text = `$(run) ${millisToMinutes(duration)}`;
+      this.statusBarPauseAndPlayItem.text = `$(run) ${millisToMinutes(
+        duration
+      )}`;
     },
     continue: (remainingTime: number) => {
-      this.statusBarPauseAndPlayItem.text = `$(debug-pause) ${millisToMinutes(remainingTime)}`;
+      this.statusBarPauseAndPlayItem.text = `$(debug-pause) ${millisToMinutes(
+        remainingTime
+      )}`;
     },
     clearTimer: () => {
       if (this.statusBarCounter) {
         clearInterval(this.statusBarCounter);
       }
       this.statusBarCounter = null;
-    }
+    },
   };
 
   private updateStatusBarTimer() {
     const timer = this.state?.timer;
-    if (!timer) { return; }
+    if (!timer) {
+      return;
+    }
 
     if (!timer.startedAt) {
       // Paused
@@ -411,10 +458,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       return;
     }
 
-
     // Timer is running
     if (!this.statusBarCounter) {
-      this.statusBarCounter = setInterval(this.updateStatusBarTimer.bind(this), 200);
+      this.statusBarCounter = setInterval(
+        this.updateStatusBarTimer.bind(this),
+        200
+      );
     }
     this.statusBarTimerAction.continue(remainingTime);
   }
@@ -423,14 +472,15 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
    *  Notification
    */
 
-  
   private showNotificationWithOpenTimerAction(message: string) {
-    const OPEN_MOBTIMER_ACTION = 'Open Mobtime';
-    vscode.window.showInformationMessage(message, OPEN_MOBTIMER_ACTION).then((e) => {
-      if (e === OPEN_MOBTIMER_ACTION) {
-        vscode.commands.executeCommand('mobtime-sidebar.focus');
-      }
-    });
+    const OPEN_MOBTIMER_ACTION = "Open Mobtime";
+    vscode.window
+      .showInformationMessage(message, OPEN_MOBTIMER_ACTION)
+      .then((e) => {
+        if (e === OPEN_MOBTIMER_ACTION) {
+          vscode.commands.executeCommand("mobtime-sidebar.focus");
+        }
+      });
   }
 
   private showNotification(message: string) {

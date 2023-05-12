@@ -24,7 +24,7 @@ export const Connector: React.FC = () => {
 
   const handleConnection = useCallback(() => {
     if (timerName) {
-      dispatchAction({ 
+      dispatchAction({
         type: ExtensionAction.CONNECT_MOBTIME,
         data: {
           name: timerName,
@@ -47,8 +47,8 @@ export const Connector: React.FC = () => {
       />
       <p style={{ marginTop: '4px' }}>
         <strong>Server: </strong>
-        <a href={`${timerServer || 'https://localhost:4000'}/${timerName || ''}`}>
-          {timerServer || 'https://localhost:4000'}/{timerName}
+        <a href={`${timerServer || 'https://mobti.me'}/${timerName || ''}`}>
+          {timerServer || 'https://mobti.me'}/{timerName}
         </a>
       </p>
       <AnimatePresence>
@@ -72,7 +72,7 @@ export const Connector: React.FC = () => {
               duration: 0.4,
             }}
           >
-            <VscDebugDisconnect size={20}/> 
+            <VscDebugDisconnect size={20} />
             <p>Connect</p>
           </Button>
         )}
